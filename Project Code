@@ -1,0 +1,114 @@
+self.balance -= amount
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    def get_balance(self):
+        return self.balance
+
+
+class CurrentAccount(Account):
+    def _init_(self, account_number, balance=0, overdraft_limit=0):
+        super()._init_(account_number, balance)
+        self.overdraft_limit = overdraft_limit
+
+    def withdraw(self, amount):
+        if amount > 0:
+            if self.balance + self.overdraft_limit >= amount:
+                self.balance -= amount
+                return True
+            else:
+                return False
+        else:
+            return False
+
+
+class SavingsAccount(Account):
+    def _init_(self, account_number, balance=0, interest_rate=0.0):
+        super()._init_(account_number, balance)
+        self.interest_rate = interest_rate
+
+    def apply_interest(self):
+        interest = self.balance * self.interest_rate
+        self.balance += interest
+        return True
+
+class BankingApp:
+    def _init_(self, root):
+        self.root = root
+        self.current_account = CurrentAccount("0038977699", 5000)
+        self.savings_account = SavingsAccount("987654321", 10000)
+
+        self.main_frame = tk.Frame(self.root)
+        self.main_frame.pack(padx=50, pady=50)
+
+        self.account_label = tk.Label(self.main_frame, text="Select Account:")
+        self.account_label.pack()
+
+        self.current_button = tk.Button(self.main_frame, text="Current Account", command=self.select_current_account)
+        self.current_button.pack(pady=5)
+
+        self.savings_button = tk.Button(self.main_frame, text="Savings Account", command=self.select_savings_account)
+        self.savings_button.pack(pady=5)
+
+        self.operation_label = tk.Label(self.main_frame, text="Select Operation:")
+        self.operation_label.pack()
+
+        self.deposit_button = tk.Button(self.main_frame, text="Deposit", command=self.deposit)
+        self.deposit_button.pack(pady=5)
+
+        self.withdraw_button = tk.Button(self.main_frame, text="Withdraw", command=self.withdraw)
+        self.withdraw_button.pack(pady=5)
+
+        self.check_balance_button = tk.Button(self.main_frame, text="Check Balance", command=self.check_balance)
+        self.check_balance_button.pack(pady=5)
+
+        self.amount_label = tk.Label(self.main_frame, text="Amount:")
+        self.amount_label.pack()
+
+        self.amount_entry = tk.Entry(self.main_frame)
+        self.amount_entry.pack(pady=5)
+
+        self.transaction_label = tk.Label(self.main_frame, text="")
+        self.transaction_label.pack(pady=10)
+
+        self.canvas = tk.Canvas(self.root, width=200, height=50)
+        self.canvas.pack()
+
+    def select_current_account(self):
+        self.selected_account = self.current_account
+
+    def select_savings_account(self):
+        self.selected_account = self.savings_account
+
+    def deposit(self):
+        amount = float(self.amount_entry.get())
+        success = self.selected_account.deposit(amount)
+        self.show_transaction_result(success)
+        self.amount_entry.delete(0, tk.END)
+
+    def withdraw(self):
+        amount = float(self.amount_entry.get())
+        success = self.selected_account.withdraw(amount)
+        self.show_transaction_result(success)
+        self.amount_entry.delete(0, tk.END)
+
+    def check_balance(self):
+        balance = self.selected_account.get_balance()
+        messagebox.showinfo("Account Balance", f"Account {self.selected_account.account_number} balance: {balance}")
+
+
+    def show_transaction_result(self, success):
+        if success:
+            self.transaction_label.config(text="Transaction Successful", fg="green", bg= "white")
+            self.canvas.create_rectangle(10, 10, 190, 40, fill="green")
+        else:
+            self.transaction_label.config(text="Transaction Failed", fg="red", bg= "black")
+            self.canvas.create_rectangle(10, 10, 190, 40, fill="red")
+
+
+app = BankingApp(window)
+
+window.mainloop()
